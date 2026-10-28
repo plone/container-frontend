@@ -1,0 +1,28 @@
+name: Weekly scheduled rebuild
+
+on:
+  # Note: the schedule trigger only works on the default branch
+  schedule:
+    # Weekly, Mondays at 05:00 UTC — keeps images aligned with
+    # upstream Debian, Python, UV and Plone dependency updates.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        branch: [19.x]
+    steps:
+      - name: Trigger release workflow on ${{ matrix.branch }} branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run release.yml \
+            --repo "${{ github.repository }}" \
+            --ref ${{ matrix.branch }}
