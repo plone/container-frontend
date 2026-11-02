@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        branch: [19.x]
+        branch: [18.x, 19.x]
     steps:
       - name: Trigger release workflow on ${{ matrix.branch }} branch
         env:
