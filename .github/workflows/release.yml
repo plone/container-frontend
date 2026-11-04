@@ -10,8 +10,8 @@ env:
   BASE_IMAGE_NAME: plone/frontend
   IS_LATEST: false
   # add for example "-buildtest" to not overwrite baseline images
-  SUFFIX_PNPM: "-buildtest"
-  SUFFIX_YARN: "-yarn-buildtest"
+  SUFFIX_PNPM: ""
+  SUFFIX_YARN: "-yarn"
 
 jobs:
   meta:
