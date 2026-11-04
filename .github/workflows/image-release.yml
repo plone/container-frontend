@@ -49,10 +49,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      # Artifacts are shared by every image built in the same workflow run,
+      # so the key must identify the image and suffix, not only the platform.
+      # Otherwise one image's digest overwrites another's, and the merge job
+      # publishes a manifest that mixes images (e.g. pnpm and yarn builders).
       - name: Prepare artifact key
+        env:
+          IMAGE_NAME: ${{ inputs.image-name }}
+          SUFFIX: ${{ inputs.suffix }}
+          PLATFORM: ${{ matrix.platform }}
         run: |
-          platform=${{ matrix.platform }}
-          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+          echo "IMAGE_KEY=${IMAGE_NAME//\//-}${SUFFIX}" >> "$GITHUB_ENV"
+          echo "PLATFORM_PAIR=${PLATFORM//\//-}" >> "$GITHUB_ENV"
 
       - name: Docker meta
         id: meta
@@ -111,7 +119,7 @@ jobs:
       - name: Upload digest
         uses: actions/upload-artifact@v7
         with:
-          name: digests-${{ env.PLATFORM_PAIR }}
+          name: digests-${{ env.IMAGE_KEY }}-${{ env.PLATFORM_PAIR }}
           path: ${{ runner.temp }}/digests/*
           if-no-files-found: error
           overwrite: true
@@ -123,11 +131,18 @@ jobs:
     needs:
       - release
     steps:
+      - name: Prepare artifact key
+        env:
+          IMAGE_NAME: ${{ inputs.image-name }}
+          SUFFIX: ${{ inputs.suffix }}
+        run: |
+          echo "IMAGE_KEY=${IMAGE_NAME//\//-}${SUFFIX}" >> "$GITHUB_ENV"
+
       - name: Download digests
         uses: actions/download-artifact@v8
         with:
           path: ${{ runner.temp }}/digests
-          pattern: digests-*
+          pattern: digests-${{ env.IMAGE_KEY }}-linux-*
           merge-multiple: true
 
       - name: List digest directory
