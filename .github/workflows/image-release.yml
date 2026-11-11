@@ -101,6 +101,7 @@ jobs:
           build-args: |
             VOLTO_VERSION=${{ inputs.volto-version }}
             SUFFIX=${{ inputs.suffix }}
+          pull: true
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ inputs.image-name }}
           labels: ${{ steps.meta.outputs.labels }}
